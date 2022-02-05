@@ -2,7 +2,6 @@ import re
 import sys
 
 program = []
-machineCode = []
 counter = 1
 
 tmp = ""
@@ -12,10 +11,12 @@ if outputMode != 'h' and outputMode != 'b':
     print("Unrecognised output mode")
     sys.exit()
 
-while tmp != "exit":
-    tmp = input(str(counter) + ": ")
-    if tmp != "exit":
+while tmp.lower() != "end":
+    tmp = input(str(counter) + " >>> ")
+    if tmp.lower() != "end":
         program.append(tmp)
+    else:
+        print("\n")
     counter += 1
 
 inputMap = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110", "R7": "111",
@@ -31,81 +32,78 @@ for i in range(len(program)):
     instruction = ""
     if tmp_li[0] == "MOV" or tmp_li[0] == "ADD" or tmp_li[0] == "SUB" or tmp_li[0] == "ADC":
         if len(tmp_li) == 3:
-            instruction += "0"
+            instruction = "0"
             instruction += inputMap.get(tmp_li[0])
             instruction += inputMap.get(tmp_li[1])
             try:
-                if int(tmp_li[2], 16) <= 0xFF:
+                if int(tmp_li[2], 16) <= int("0xFF", 16):
                     instruction += "1"
                     instruction += "{0:08b}".format(int(tmp_li[2], 16))
                 else:
                     print("ERROR: Number is greater than 8 bits on line " + str(i + 1))
-                    sys.exit()
+                    continue
             except ValueError:
                 instruction += "0"
                 instruction += inputMap.get(tmp_li[2])
                 instruction += "{0:05b}".format(0, 16)
 
         elif len(tmp_li) == 4:
-            instruction += "0"
+            instruction = "0"
             instruction += inputMap.get(tmp_li[0])
             instruction += inputMap.get(tmp_li[1])
             instruction += "0"
             instruction += inputMap.get(tmp_li[2])
-            if int(tmp_li[3], 16) <= 0x1F:
-                instruction += "{0:08b}".format(int(tmp_li[3], 16))
+            if int(tmp_li[3], 16) <= int("0x1F", 16):
+                instruction += "{0:05b}".format(int(tmp_li[3], 16))
             else:
                 print("ERROR: Number is greater than 5 bits on line " + str(i+1))
-                sys.exit()
+                continue
         else:
             print("ERROR: Invalid number of elements on line " + str(i+1))
-            sys.exit()
-
+            continue
 
     elif tmp_li[0] == "LDR" or tmp_li[0] == "STR":
-        instruction += "10"
+        instruction = "10"
         if tmp_li[0] == "LDR":
             instruction += "0"
         else:
             instruction += "1"
         instruction += "0"
         instruction += inputMap.get(tmp_li[1])
-        if len(tmp_li == 3):
+        if len(tmp_li) == 3:
             instruction += "1"
-            if int(tmp_li[2], 16) <= 0xFF:
+            if int(tmp_li[2], 16) <= int("0xFF", 16):
                 instruction += "{0:08b}".format(int(tmp_li[2], 16))
             else:
                 print("ERROR: Number is greater than 8 bits on line " + str(i+1))
-                sys.exit()
+                continue
         elif len(tmp_li) == 4:
             instruction += "0"
             instruction += inputMap.get(tmp_li[2])
-            if int(tmp_li[3], 16) <= 0x1F:
-                instruction += "{0:08b}".format(int(tmp_li[3], 16))
+            if int(tmp_li[3], 16) <= int("0x1F", 16):
+                instruction += "{0:05b}".format(int(tmp_li[3], 16))
             else:
                 print("ERROR: Number is greater than 5 bits on line " + str(i + 1))
-                sys.exit()
+                continue
         else:
             print("ERROR: Invalid number of elements on line " + str(i + 1))
-            sys.exit()
+            continue
 
     elif tmp_li[0] == "JMP" or tmp_li[0] == "JNE" or tmp_li[0] == "JCS" or tmp_li[0] == "JMI":
-        instruction += "1100"
+        instruction = "1100"
         instruction += inputMap.get(tmp_li[0])
         instruction += "0"
-        if int(tmp_li[1], 16) <= 0xFF:
+        if int(tmp_li[1], 16) <= int("0xFF", 16):
             instruction += "{0:08b}".format(int(tmp_li[1], 16))
         else:
             print("ERROR: Number is greater than 8 bits on line " + str(i + 1))
-            sys.exit()
+            continue
     else:
         print("Error on line " + str(i+1) + ", invalid operation")
-        sys.exit()
-    machineCode.append(instruction)
+        continue
 
-for i in range(len(program)):
     if outputMode == "b":
-        print("0b" + machineCode[i])
+        print(str(i+1) + ": 0b" + instruction)
     else:
-        tmp = int(machineCode[i], 2)
-        print("0x" + format(tmp, 'x'))
+        tmp = int(instruction, 2)
+        print(str(i+1) + ": 0x" + format(tmp, 'x'))
