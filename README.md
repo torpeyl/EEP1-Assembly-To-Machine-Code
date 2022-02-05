@@ -1,7 +1,7 @@
 # EEP1-Assembly-To-Machine-Code
 Convert Assembly code to machine code for the EEP1 cpu
 
-Although the code below is written in upper case, the compiler is not case-sensitive
+Although the code below is written in upper case, the compiler is not case-sensitive. Any numbers must be entered in hex, and negative signs are not allowed so convert to two's compliment before entering.
 
 Example code:
 
