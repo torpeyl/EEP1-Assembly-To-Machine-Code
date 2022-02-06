@@ -21,7 +21,9 @@ while tmp.lower() != "end":
 
 inputMap = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110", "R7": "111",
             "MOV": "000", "ADD": "001", "SUB": "010", "ADC": "011",
-            "LDR": "100", "STR": "101", "JMP": "1100", "JNE": "1101", "JCS": "1110", "JMI": "1111"}
+            "LDR": "100", "STR": "101", "JMP": "0000", "JNE": "0010", "JCS": "0100", "JMI": "0110", "JGE": "1000",
+            "JGT": "1010", "JHI": "1100", "JSR": "1110", "JEQ": "0011", "JCC": "0101", "JPL": "0111", "JLT": "1001",
+            "JLE": "1011", "JLS": "1101", "RET": "1111"}
 
 for i in range(len(program)):
     tmp_li = re.split(" ", program[i])
@@ -89,21 +91,22 @@ for i in range(len(program)):
             print("ERROR: Invalid number of elements on line " + str(i + 1))
             continue
 
-    elif tmp_li[0] == "JMP" or tmp_li[0] == "JNE" or tmp_li[0] == "JCS" or tmp_li[0] == "JMI":
-        instruction = "1100"
-        instruction += inputMap.get(tmp_li[0])
-        instruction += "0"
-        if int(tmp_li[1], 16) <= int("0xFF", 16):
-            instruction += "{0:08b}".format(int(tmp_li[1], 16))
-        else:
-            print("ERROR: Number is greater than 8 bits on line " + str(i + 1))
-            continue
     else:
-        print("Error on line " + str(i+1) + ", invalid operation")
-        continue
+        try:
+            instruction = "1100"
+            instruction += inputMap.get(tmp_li[0])
+            if int(tmp_li[1], 16) <= int("0xFF", 16):
+                instruction += "{0:08b}".format(int(tmp_li[1], 16))
+            else:
+                print("ERROR: Number is greater than 8 bits on line " + str(i + 1))
+                continue
+        except TypeError:
+            print("Error on line " + str(i + 1) + ", invalid operation")
+            continue
 
     if outputMode == "b":
         print(str(i+1) + ": 0b" + instruction)
     else:
         tmp = int(instruction, 2)
         print(str(i+1) + ": 0x" + format(tmp, 'x'))
+
