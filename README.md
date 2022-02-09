@@ -2,7 +2,7 @@
 Convert Assembly code to machine code for the EEP1 cpu
 
 Although the code below is written in upper case, the compiler is not case-sensitive. 
-This compiler will accept values written in any of the following formats:
+This compiler will accept values written in any of the following formats, however negative numbers should be avoided if possible as their behaviour may be undefined by EEP1:
   
 • 0x01            &nbsp;  &nbsp; (hex)  
 • -0x01           &nbsp;  &nbsp; (hex)  
