@@ -129,7 +129,11 @@ for i in range(len(program)):
         try:
             instruction = "1100"
             instruction += inputMap.get(tmp_li[0])
-            tmp = val_to_bin(8, tmp_li[1])
+            try:
+                tmp = val_to_bin(8, tmp_li[1])
+            except IndexError:
+                print("ERROR: Invalid number of elements on line " + str(i + 1))
+                continue
             if tmp is not None:
                 instruction += tmp
             else:
@@ -144,3 +148,4 @@ for i in range(len(program)):
     else:
         tmp = int(instruction, 2)
         print(str(i+1) + ": 0x" + format(tmp, 'x'))
+
