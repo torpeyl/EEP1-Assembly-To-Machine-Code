@@ -1,0 +1,4 @@
+MOV R0, #94
+LSR R6, R0, #12
+JMP 0x45
+add R6 0b010110
