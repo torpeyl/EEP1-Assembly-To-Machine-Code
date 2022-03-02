@@ -1,16 +1,27 @@
 import re
 import sys
+import colorama
 
+inputFileName = "AssemblyCode.txt"
+outputFileName = "machineCode.ram"
 program = []
-counter = 1
-tmp = ""
-outputMode = ""
+
+ALUinputMap = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110", "R7": "111",
+            "MOV": "0000", "ADD": "0001", "SUB": "0010", "ADC": "0011", "SBC": "0100", "AND": "0101", "XOR": "0110",
+            "LSR": "0111", "LDR": "1000", "STR": "1010"}
+
+JUMPinputMap = {"JMP": "11000000", "JNE": "11000010", "JCS": "11000100", "JMI": "11000110", "JGE": "11001000",
+            "JGT": "11001010", "JHI": "11001100", "JSR": "11001110", "JEQ": "11000011", "JCC": "11000101", "JPL": "11000111", "JLT": "11001001",
+            "JLE": "11001011", "JLS": "11001101", "RET": "11001111"}
+
+colorama.init()
+
+RED = '\033[31m'   # mode 31 = red forground
+RESET = '\033[0m'  # mode 0  = reset
 
 
-def val_to_bin(n_bits, val):
+def val_to_bin(val, n_bits):
     bit_format = "{0:0" + str(n_bits) + "b}"
-    if val[0] == "#":
-        val = val[1:]
     if "0x" in val.lower():
         if "-" in val:
             tmp = int(val, 16) + 2 ** n_bits
@@ -37,115 +48,77 @@ def val_to_bin(n_bits, val):
         return bit_format.format(tmp)
 
 
-outputMode = input("Type 'h' to have the output written in hex, or 'b' to have the output in binary: ")
-if outputMode != 'h' and outputMode != 'b':
-    print("Unrecognised output mode")
+outputType = input("Output mode h or b (hex or binary): ").lower()
+if not (outputType == "h" or outputType == "b"):
+    print(RED + "Error: Invalid input for output mode" + RESET)
     sys.exit()
 
-while tmp.lower() != "end":
-    tmp = input(str(counter) + " >>> ")
-    if tmp.lower() != "end":
-        program.append(tmp)
-    else:
-        print("\n")
-    counter += 1
+lineNumbers = input("Do you want line numbers in output file y/n: ").lower()
+if not(lineNumbers == "y" or lineNumbers == "n"):
+    print(RED + "ERROR: Invalid response" + RESET)
+    sys.exit()
 
-inputMap = {"R0": "000", "R1": "001", "R2": "010", "R3": "011", "R4": "100", "R5": "101", "R6": "110", "R7": "111",
-            "MOV": "000", "ADD": "001", "SUB": "010", "ADC": "011",
-            "LDR": "100", "STR": "101", "JMP": "0000", "JNE": "0010", "JCS": "0100", "JMI": "0110", "JGE": "1000",
-            "JGT": "1010", "JHI": "1100", "JSR": "1110", "JEQ": "0011", "JCC": "0101", "JPL": "0111", "JLT": "1001",
-            "JLE": "1011", "JLS": "1101", "RET": "1111"}
-
-for i in range(len(program)):
-    tmp_li = re.split(" ", program[i])
-    if tmp_li[0] == "":
-        tmp_li = tmp_li[1:]
-    for j, item in enumerate(tmp_li):
-        tmp_li[j] = item.upper()
-    instruction = ""
-    if tmp_li[0] == "MOV" or tmp_li[0] == "ADD" or tmp_li[0] == "SUB" or tmp_li[0] == "ADC":
-        if len(tmp_li) == 3:
-            instruction = "0"
-            instruction += inputMap.get(tmp_li[0])
-            instruction += inputMap.get(tmp_li[1])
-            try:
-                tmp = val_to_bin(8, tmp_li[2])
-                if tmp is not None:
-                    instruction += tmp
-                else:
-                    print("ERROR: Number is not appropriate for 8 bit representation on line " + str(i + 1))
-                    continue
-            except ValueError:
-                instruction += "0"
-                instruction += inputMap.get(tmp_li[2])
-                instruction += "{0:05b}".format(0, 16)
-
-        elif len(tmp_li) == 4:
-            instruction = "0"
-            instruction += inputMap.get(tmp_li[0])
-            instruction += inputMap.get(tmp_li[1])
-            instruction += "0"
-            instruction += inputMap.get(tmp_li[2])
-            tmp = val_to_bin(5, tmp_li[3])
-            if tmp is not None:
-                instruction += tmp
-            else:
-                print("ERROR: Number is not appropriate for 5 bit representation on line " + str(i + 1))
-                continue
-        else:
-            print("ERROR: Invalid number of elements on line " + str(i+1))
-            continue
-
-    elif tmp_li[0] == "LDR" or tmp_li[0] == "STR":
-        instruction = "10"
-        if tmp_li[0] == "LDR":
-            instruction += "0"
-        else:
-            instruction += "1"
-        instruction += "0"
-        instruction += inputMap.get(tmp_li[1])
-        if len(tmp_li) == 3:
-            instruction += "1"
-            tmp = val_to_bin(8, tmp_li[2])
-            if tmp is not None:
-                instruction += tmp
-            else:
-                print("ERROR: Number is not appropriate for 8 bit representation on line " + str(i + 1))
-                continue
-        elif len(tmp_li) == 4:
-            instruction += "0"
-            instruction += inputMap.get(tmp_li[2])
-            tmp = val_to_bin(5, tmp_li[3])
-            if tmp is not None:
-                instruction += tmp
-            else:
-                print("ERROR: Number is not appropriate for 5 bit representation on line " + str(i + 1))
-                continue
-        else:
-            print("ERROR: Invalid number of elements on line " + str(i + 1))
-            continue
-
-    else:
+try:
+    f = open(inputFileName)
+    fileLine = f.readline()
+    lineCount = 0
+    while fileLine:
+        instruction = re.split(r", #| #|, | ", re.compile(r"\n").sub("", fileLine.upper()))
+        machineCode = ""
         try:
-            instruction = "1100"
-            instruction += inputMap.get(tmp_li[0])
+            machineCode += ALUinputMap.get(instruction[0])
             try:
-                tmp = val_to_bin(8, tmp_li[1])
-            except IndexError:
-                print("ERROR: Invalid number of elements on line " + str(i + 1))
-                continue
-            if tmp is not None:
-                instruction += tmp
-            else:
-                print("ERROR: Number is not appropriate for 8 bit representation on line " + str(i + 1))
-                continue
+                machineCode += ALUinputMap.get(instruction[1])
+                insLen = len(instruction)
+                if insLen == 3:
+                    try:
+                        machineCode += ("1" + val_to_bin(instruction[2], 8))
+                    except ValueError:
+                        print(RED + "ERROR: Invalid number on line " + str(lineCount) + RESET)
+                elif insLen == 4:
+                    try:
+                        machineCode += ("0" + ALUinputMap.get(instruction[2]))
+                    except TypeError:
+                        print(RED + "ERROR: Second register on line " + str(lineCount) + " is invalid" + RESET)
+                    try:
+                        machineCode +=  val_to_bin(instruction[3], 5)
+                    except TypeError:
+                        print(RED + "ERROR: Invalid number on line " + str(lineCount) + RESET)
+                else:
+                    print(RED + "ERROR: Invalid number of elements on line " + str(lineCount) + RESET)
+
+            except TypeError:
+                print(RED + "ERROR: First register on line " + str(lineCount) + " is invalid" + RESET)
+
         except TypeError:
-            print("Error on line " + str(i + 1) + ", invalid operation")
-            continue
+            try:
+                machineCode += (JUMPinputMap.get(instruction[0]) + val_to_bin(instruction[1], 8))
+            except TypeError:
+                print(RED + "ERROR: Invalid instruction on line " + str(lineCount) + RESET)
+            except ValueError:
+                print(RED + "ERROR: Invalid number on line " + str(lineCount) + RESET)
 
-    if outputMode == "b":
-        print(str(i+1) + ": 0b" + instruction)
-    else:
-        tmp = int(instruction, 2)
-        print(str(i+1) + ": 0x" + format(tmp, 'x'))
+        program.append(machineCode)
 
+        lineCount += 1
+        fileLine = f.readline()
+
+    f.close()
+except FileNotFoundError:
+    print(RED + "ERROR: " + RESET + "File " + RED + inputFileName + RESET + " not found")
+
+f = open(outputFileName, "w")
+
+if outputType == "b":
+    for lineNum, line in enumerate(program):
+        if (lineNumbers == "y"):
+            f.write("0x" + format(lineNum, 'x') + "  ")
+        f.write("0b" + line + "\n")
+else:
+    for lineNum, line in enumerate(program):
+        if (lineNumbers == "y"):
+            f.write("0x" + format(lineNum, 'x') + "  ")
+        tmp = int(line, 2)
+        f.write("0x" + format(tmp, 'x') + "\n")
+
+f.close()
