@@ -1,8 +1,8 @@
 # EEP1-Assembly-To-Machine-Code
 Convert Assembly code to machine code for the EEP1 cpu
 
-Although the code below is written in upper case, the compiler is not case-sensitive. 
-This compiler will accept values written in any of the following formats, however negative numbers should be avoided if possible as their behaviour may be undefined by EEP1:
+The compiler is not case-sensitive, however the standard is to write assembly in uppercase. 
+This compiler will accept values written in any of the following formats:
   
 • 0x01            &nbsp;  &nbsp; (hex)  
 • -0x01           &nbsp;  &nbsp; (hex)  
@@ -17,7 +17,11 @@ This compiler will accept values written in any of the following formats, howeve
 • #-0b01         &nbsp; &nbsp; (binary)  
 • -0b1           &nbsp; &nbsp; (binary)  
 
-Example code:
+Example input file code:
 
-![EEP1_Compiler_Photo1](https://user-images.githubusercontent.com/93376459/152657171-5a599862-66c1-497b-88b4-ea6284a9cb44.png)
-![EEP1_Compiler_Photo2](https://user-images.githubusercontent.com/93376459/152657174-e7d4e876-889f-45e8-8cfe-53137e38fac3.png)
+MOV R0, #94
+LSR R6, R0, 12
+JMP 0x45
+add R6 0b010110
+
+As you can see the compiler is flexible when it comes to comma usage and hashtag usage, however '0x' and '0b' must be included when using binary and hex values
