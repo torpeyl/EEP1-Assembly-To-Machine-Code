@@ -112,13 +112,13 @@ f = open(outputFileName, "w")
 if outputType == "b":
     for lineNum, line in enumerate(program):
         if (lineNumbers == "y"):
-            f.write("0x" + format(lineNum, 'x') + "  ")
+            f.write("0x" + format(lineNum, 'x').upper() + "  ")
         f.write("0b" + line + "\n")
 else:
     for lineNum, line in enumerate(program):
         if (lineNumbers == "y"):
-            f.write("0x" + format(lineNum, 'x') + "  ")
+            f.write("0x" + format(lineNum, 'x').upper() + "  ")
         tmp = int(line, 2)
-        f.write("0x" + format(tmp, 'x') + "\n")
+        f.write("0x" + format(tmp, 'x').upper() + "\n")
 
 f.close()
