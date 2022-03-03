@@ -26,3 +26,4 @@ add R6 0b010110
 
 • As you can see the compiler is flexible when it comes to comma usage and hashtag usage, however '0x' and '0b' must be included when using binary and hex values.       
 • The inital input and output file names are "AssemblyCode.txt" and "machineCode.ram" respectively, however these can be changed at the top of the python script.
+• Conventionally all X bits in an instruction are set to '0' so that is what this compiler does.
